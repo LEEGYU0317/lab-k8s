@@ -4,7 +4,7 @@ metadata:
   name: my-web-app
   namespace: my-web
 spec:
-  replicas: 2
+  replicas: 1          # 평소에는 1개만 띄움 (비용 절약)
   selector:
     matchLabels:
       app: my-web-app
@@ -15,14 +15,19 @@ spec:
     spec:
       containers:
       - name: my-web-app
-        # ★ 아래 주소를 본인의 NCR 이미지 주소로 꼭 수정하세요!
-        image: v5eb64tw.kr.private-ncr.ntruss.com/my-web-app:8
+        # ★ 이미지 주소 수정 (본인 NCR 주소 + 태그)
+        image: my-repo.kr.ncr.ntruss.com/my-web-app:3 
         ports:
         - containerPort: 80
+        # ★ [중요] 오토 스케일링을 위한 CPU 기준점 설정
+        resources:
+          requests:
+            cpu: "100m"  # 0.1 코어 (기준)
+          limits:
+            cpu: "200m"  # 0.2 코어 (최대)
       imagePullSecrets:
       - name: ncr-secret
 ---
-# 1. 서비스 타입을 ClusterIP(내부용)로 변경합니다. (돈 안 듦)
 apiVersion: v1
 kind: Service
 metadata:
@@ -36,23 +41,36 @@ spec:
   - port: 80
     targetPort: 80
 ---
-# 2. Ingress(길 안내 규칙)를 추가합니다.
+# ★ 오토 스케일러 (HPA) 추가
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-web-hpa
+  namespace: my-web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-web-app
+  minReplicas: 1    # 최소 1개
+  maxReplicas: 10   # 최대 10개까지 늘려라!
+  targetCPUUtilizationPercentage: 50 # CPU 사용률 50% 넘으면 스케일 아웃!
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: my-web-ingress
   namespace: my-web
   annotations:
-    # "Nginx야, 이 규칙을 네가 처리해"
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
   - http:
       paths:
-      - path: /  # 루트 경로(/)로 들어오면
+      - path: /
         pathType: Prefix
         backend:
           service:
-            name: my-web-service # 이 서비스로 보내줘
+            name: my-web-service
             port:
               number: 80
