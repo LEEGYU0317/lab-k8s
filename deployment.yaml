@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web-app
+  namespace: my-web  # 이 앱은 'my-web'이라는 동네(Namespace)에 살 겁니다.
+spec:
+  replicas: 2        # 파드(서버)를 2개 띄워서 부하 분산!
+  selector:
+    matchLabels:
+      app: my-web-app
+  template:
+    metadata:
+      labels:
+        app: my-web-app
+    spec:
+      containers:
+      - name: my-web-app
+        # ★ 아래 주소를 본인의 NCR 이미지 주소로 꼭 바꾸세요! (뒤에 :1 붙이기)
+        image: v5eb64tw.kr.private-ncr.ntruss.com/my-web-app:1
+        ports:
+        - containerPort: 80
+      # ★ 중요: NCR은 비공개이므로, '열쇠(Secret)'가 있어야 이미지를 가져올 수 있습니다.
+      imagePullSecrets:
+      - name: ncr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-web-service
+  namespace: my-web
+spec:
+  type: LoadBalancer # 외부에서 접속할 수 있게 로드밸런서 연결!
+  selector:
+    app: my-web-app
+  ports:
+  - port: 80
+    targetPort: 80
