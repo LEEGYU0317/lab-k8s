@@ -16,7 +16,7 @@ spec:
       containers:
       - name: my-web-app
         # ★ 아래 주소를 본인의 NCR 이미지 주소로 꼭 수정하세요!
-        image: v5eb64tw.kr.private-ncr.ntruss.com/my-web-app
+        image: v5eb64tw.kr.private-ncr.ntruss.com/my-web-app:1
         ports:
         - containerPort: 80
       imagePullSecrets:
