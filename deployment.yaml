@@ -16,7 +16,7 @@ spec:
       containers:
       - name: my-web-app
         # ★ 이미지 주소 수정 (본인 NCR 주소 + 태그)
-        image: my-repo.kr.ncr.ntruss.com/my-web-app:8 
+        image: v5eb64tw.kr.private-ncr.ntruss.com/my-web-app:8 
         ports:
         - containerPort: 80
         # ★ [중요] 오토 스케일링을 위한 CPU 기준점 설정
