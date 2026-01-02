@@ -20,7 +20,6 @@ pipeline {
     }
     
     environment {
-        // ★ 아래 주소를 본인의 NCR 엔드포인트로 꼭! 수정해주세요 (따옴표 유지)
         NCR_REGISTRY = 'v5eb64tw.kr.private-ncr.ntruss.com'
         
         NCR_CREDENTIAL_ID = 'ncr-credentials'
